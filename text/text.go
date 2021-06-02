@@ -19,6 +19,10 @@ func NewModel(width int, content string) Model {
 	}
 }
 
+func (m *Model) SetSize(width int) {
+	m.Width = width
+}
+
 func (m Model) View() string {
 	bg := "light"
 	if lipgloss.HasDarkBackground() {

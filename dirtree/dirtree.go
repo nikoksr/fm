@@ -7,9 +7,13 @@ import (
 	"strings"
 
 	"github.com/knipferrc/fm/icons"
+	"github.com/knipferrc/fm/utils"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
+
+type directoryMsg []fs.FileInfo
 
 type Model struct {
 	Files               []fs.FileInfo
@@ -65,6 +69,38 @@ func (m Model) GetTotalFiles() int {
 
 func (m *Model) ToggleHidden() {
 	m.ShowHidden = !m.ShowHidden
+}
+
+func (m Model) Init() tea.Cmd {
+	return nil
+}
+
+func updateDirectoryListing(dir string, showHidden bool) tea.Cmd {
+	return func() tea.Msg {
+		files := utils.GetDirectoryListing(dir, showHidden)
+
+		return directoryMsg(files)
+	}
+}
+
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case directoryMsg:
+		m.Files = msg
+		m.Cursor = 0
+
+	case tea.KeyMsg:
+		switch msg.String() {
+		case ".":
+			m.ToggleHidden()
+
+			return m, updateDirectoryListing(".", m.ShowHidden)
+		}
+	}
+
+	return m, cmd
 }
 
 func (m Model) dirItem(selected bool, file fs.FileInfo) string {

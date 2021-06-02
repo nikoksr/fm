@@ -71,17 +71,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 
 	switch msg := msg.(type) {
-	case directoryMsg:
-		m.DirTree.SetContent(msg)
-		m.DirTree.GotoTop()
-		m.PrimaryPane.SetContent(m.DirTree.View())
-		m.ShowCommandBar = false
-		m.Textinput.Blur()
-		m.Textinput.Reset()
-		selectedFile, status, fileTotals, logo := m.getStatusBarContent()
-		m.StatusBar.SetContent(selectedFile, status, fileTotals, logo)
-
-		return m, cmd
 
 	case fileContentMsg:
 		m.SecondaryPane.SetContent(utils.ConverTabsToSpaces(string(msg)))
@@ -104,14 +93,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 - G                   | go to botom of pane
 - ~                   | switch to home directory
 - .                   | toggle hidden files and directories
-- (-)                   | Go To previous directory
+- (-)                 | Go To previous directory
 - :                   | open command bar
 - mkdir dirname       | create directory in current directory
 - touch filename.txt  | create file in current directory
 - mv newname.txt      | rename currently selected file or directory
 - cp /dir/to/move/to  | move file or directory
-- rm                 | remove file or directory
-- tab                | toggle between panes
+- rm                  | remove file or directory
+- tab                 | toggle between panes
 `)
 
 			m.PrimaryPane = pane.NewModel(
@@ -166,8 +155,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ScreenWidth = msg.Width
 			m.ScreenHeight = msg.Height
 			m.PrimaryPane.SetSize(msg.Width/2, msg.Height-constants.StatusBarHeight)
-			m.SecondaryPane.SetSize(msg.Width/2, msg.Height-constants.StatusBarHeight)
+			m.SecondaryPane.SetSize(msg.Width/2-2, msg.Height-constants.StatusBarHeight)
 			m.StatusBar.SetSize(msg.Width)
+			m.HelpText.SetSize(msg.Width / 2)
 		}
 
 		return m, cmd
@@ -326,15 +316,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			return m, cmd
 
-		case ".":
-			if !m.ShowCommandBar && m.PrimaryPane.IsActive {
-				m.DirTree.ToggleHidden()
-
-				return m, updateDirectoryListing(constants.CurrentDirectory, m.DirTree.ShowHidden)
-			}
-
-			return m, cmd
-
 		case "tab":
 			if !m.ShowCommandBar {
 				if m.PrimaryPane.IsActive {
@@ -369,6 +350,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		selectedFile, status, fileTotals, logo := m.getStatusBarContent()
 		m.StatusBar.SetContent(selectedFile, status, fileTotals, logo)
 	}
+
+	m.DirTree, cmd = m.DirTree.Update(msg)
+	cmds = append(cmds, cmd)
 
 	m.Textinput, cmd = m.Textinput.Update(msg)
 	cmds = append(cmds, cmd)
