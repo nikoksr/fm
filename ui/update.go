@@ -71,7 +71,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 
 	switch msg := msg.(type) {
-
 	case fileContentMsg:
 		m.SecondaryPane.SetContent(utils.ConverTabsToSpaces(string(msg)))
 

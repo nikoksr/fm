@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/knipferrc/fm/constants"
 	"github.com/knipferrc/fm/icons"
 	"github.com/knipferrc/fm/utils"
 
@@ -91,12 +92,13 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.Files = msg
 		m.Cursor = 0
 
+		return m, cmd
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case ".":
 			m.ToggleHidden()
-
-			return m, updateDirectoryListing(".", m.ShowHidden)
+			return m, updateDirectoryListing(constants.CurrentDirectory, m.ShowHidden)
 		}
 	}
 
